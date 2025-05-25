@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 @Data
-@PropertySource("application.yml")
 public class BotConfig {
     @Value("${bot.username}")
     String botUserName;
