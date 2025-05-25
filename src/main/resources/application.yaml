@@ -1,3 +1,7 @@
+bot:
+  username: akmsobesbot
+  token: 7627408434:AAGOqQ_5Df2fb-f63RmQgcSCeJke63UBJao
+  owner: 928437440
 spring:
   security:
     user:
