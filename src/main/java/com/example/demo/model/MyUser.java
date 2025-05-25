@@ -1,0 +1,16 @@
+package com.example.demo.model;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+import java.time.LocalDateTime;
+
+@Entity
+public class MyUser {
+    @Id
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private String username;
+    private LocalDateTime lastLogin;
+}
