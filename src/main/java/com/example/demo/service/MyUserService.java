@@ -6,13 +6,11 @@ import com.example.demo.exception.InvalidHashException;
 import com.example.demo.repository.MyUserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -24,11 +22,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MyUserService {
     private final MyUserRepository userRepository;
-    @Value("${bot.token}")
-    private String botToken;
 
     @Transactional
-    public ApiErrorResponse handleInitData(InitDataRequest request) throws Exception {
+    public ApiErrorResponse handleInitData(InitDataRequest request,String botToken) throws Exception {
             Map<String, String> dataMap = parseInitData(request.getInitData());
 
             String receivedHash = dataMap.remove("hash");
@@ -38,7 +34,7 @@ public class MyUserService {
                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                     .collect(Collectors.joining("\n"));
 
-            String secretKey = hmacSha256("WebAppData", botToken);
+            String secretKey = hmacSha256(botToken);
 
             String calculatedHash = hmacSha256Hex(secretKey, checkString);
 
@@ -49,7 +45,7 @@ public class MyUserService {
             }
     }
 
-    private Map<String, String> parseInitData(String initData) throws UnsupportedEncodingException {
+    private Map<String, String> parseInitData(String initData) {
         Map<String, String> map = new HashMap<>();
         for (String pair : initData.split("&")) {
             String[] parts = pair.split("=", 2);
@@ -60,8 +56,8 @@ public class MyUserService {
         return map;
     }
 
-    private String hmacSha256(String key, String data) throws Exception {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    private String hmacSha256(String data) throws Exception {
+        SecretKeySpec secretKeySpec = new SecretKeySpec("WebAppData".getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(secretKeySpec);
         return Base64.getEncoder().encodeToString(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));

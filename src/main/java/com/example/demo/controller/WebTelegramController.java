@@ -21,6 +21,6 @@ public class WebTelegramController {
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyInitData(@RequestBody InitDataRequest initDataRequest) throws Exception {
-        return ResponseEntity.ok(userService.handleInitData(initDataRequest));
+        return ResponseEntity.ok(userService.handleInitData(initDataRequest, botToken));
     }
 }
