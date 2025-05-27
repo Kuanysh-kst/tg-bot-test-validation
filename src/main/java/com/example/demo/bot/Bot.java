@@ -7,12 +7,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -29,12 +24,18 @@ public class Bot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             long chatId = update.getMessage().getChatId();
 
+            String instructionText = """
+                Для настройки WebApp выполните следующие шаги:
+                1. Разверните WebApp (локально через ngrok).
+                2. Закиньте url ngrok в botFather.
+                3. Нажмите кнопку для открытия WebApp.
+                """;
+
+            SendMessage message = new SendMessage();
+            message.setChatId(String.valueOf(chatId));
+            message.setText(instructionText);
+
             try {
-                SendMessage message = createWebAppButtonMessage(
-                        chatId,
-                        "Нажми кнопку, чтобы открыть WebApp",
-                        "https://web-site-frontend-test-task.vercel.app"  // замени на свой URL
-                );
                 execute(message);
             } catch (TelegramApiException e) {
                 log.error("Ошибка при отправке сообщения", e);
@@ -46,31 +47,9 @@ public class Bot extends TelegramLongPollingBot {
     public String getBotUsername() {
         return botConfig.getBotUserName();
     }
+
     @Override
     public String getBotToken() {
         return botConfig.getToken();
-    }
-
-    private SendMessage createWebAppButtonMessage(long chatId, String text, String webAppUrl) {
-        SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
-        message.setText(text);
-
-        InlineKeyboardButton webAppButton = new InlineKeyboardButton();
-        webAppButton.setText("Открыть WebApp");
-        webAppButton.setWebApp(new org.telegram.telegrambots.meta.api.objects.webapp.WebAppInfo(webAppUrl));
-
-        List<InlineKeyboardButton> keyboardButtonsRow = new ArrayList<>();
-        keyboardButtonsRow.add(webAppButton);
-
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        keyboard.add(keyboardButtonsRow);
-
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        inlineKeyboardMarkup.setKeyboard(keyboard);
-
-        message.setReplyMarkup(inlineKeyboardMarkup);
-
-        return message;
     }
 }
