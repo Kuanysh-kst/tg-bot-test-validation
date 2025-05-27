@@ -3,46 +3,75 @@ package com.example.demo.service;
 import com.example.demo.dto.ApiErrorResponse;
 import com.example.demo.dto.InitDataRequest;
 import com.example.demo.exception.InvalidHashException;
+import com.example.demo.model.MyUser;
 import com.example.demo.repository.MyUserRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MyUserService {
-    private final MyUserRepository userRepository;
+    private final MyUserRepository repository;
 
     @Transactional
-    public ApiErrorResponse handleInitData(InitDataRequest request,String botToken) throws Exception {
-            Map<String, String> dataMap = parseInitData(request.getInitData());
+    public ApiErrorResponse handleInitData(InitDataRequest request, String botToken) throws Exception {
+        Map<String, String> dataMap = parseInitData(request.getInitData());
 
-            String receivedHash = dataMap.remove("hash");
+        String receivedHash = dataMap.remove("hash");
 
-            String checkString = dataMap.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .map(entry -> entry.getKey() + "=" + entry.getValue())
-                    .collect(Collectors.joining("\n"));
+        String checkString = dataMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining("\n"));
 
-            String secretKey = hmacSha256(botToken);
+        String secretKey = hmacSha256(botToken);
 
-            String calculatedHash = hmacSha256Hex(secretKey, checkString);
+        String calculatedHash = hmacSha256Hex(secretKey, checkString);
 
-            if (calculatedHash.equals(receivedHash)) {
-                return new ApiErrorResponse("hash successful verified!", "ok", HttpStatus.OK.value());
-            } else {
-                throw new InvalidHashException("verification hash doesn't match");
-            }
+        log.info("Received initData: {}", receivedHash);
+        log.info("Calculated initData: {}", calculatedHash);
+        if (calculatedHash.equals(receivedHash)) {
+            String userData = dataMap.get("user");
+            Map<String, String> userMap = jsonToMap(userData);
+
+            long chatId = Long.parseLong(userMap.get("id"));
+            String firstName = userMap.get("first_name");
+            String lastName = userMap.get("last_name");
+            String userName = userMap.get("username");
+            String languageCode = userMap.get("language_code");
+
+            MyUser user = repository.findById(chatId)
+                    .orElse(new MyUser()); // если нет - создаем нового
+
+            user.setId(chatId);
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setUsername(lastName);
+            user.setUsername(userName);
+            user.setLastLogin(LocalDateTime.now());
+
+            repository.save(user);
+            return new ApiErrorResponse("hash successful verified!", "ok", HttpStatus.OK.value());
+        } else {
+            throw new InvalidHashException("verification hash doesn't match");
+        }
     }
 
     private Map<String, String> parseInitData(String initData) {
@@ -74,5 +103,18 @@ public class MyUserService {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    public Map<String, String> jsonToMap(String jsonString) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> rawMap = objectMapper.readValue(jsonString, new TypeReference<>() {
+        });
+
+        Map<String, String> stringMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : rawMap.entrySet()) {
+            stringMap.put(entry.getKey(), String.valueOf(entry.getValue()));
+        }
+
+        return stringMap;
     }
 }

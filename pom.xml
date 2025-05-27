@@ -70,6 +70,11 @@
 			<artifactId>bcprov-jdk15to18</artifactId>
 			<version>1.76</version>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.15.2</version> <!-- или актуальная версия -->
+		</dependency>
 	</dependencies>
 
 	<build>
