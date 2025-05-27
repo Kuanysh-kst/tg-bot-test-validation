@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.ApiErrorResponse;
 import com.example.demo.dto.InitDataRequest;
+import com.example.demo.exception.InitDataExpiredException;
 import com.example.demo.exception.InvalidHashException;
 import com.example.demo.model.MyUser;
 import com.example.demo.repository.MyUserRepository;
@@ -50,6 +51,10 @@ public class MyUserService {
         String secretKey = hmacSha256(botToken);
 
         String calculatedHash = hmacSha256Hex(secretKey, checkString);
+        long now = System.currentTimeMillis() / 1000;
+        if ((now - date) > 86400) { // 86400 секунд = 24 часа
+            throw new InitDataExpiredException("initData time is expired");
+        }
 
         log.info("Received initData: {}", receivedHash);
         log.info("Calculated initData: {}", calculatedHash);
