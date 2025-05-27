@@ -1,30 +1,39 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
   <title>Профиль</title>
   <meta charset="UTF-8" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    .container { max-width: 600px; margin: auto; }
-    .hidden { display: none; }
-    #loading { font-style: italic; color: gray; }
-  </style>
 </head>
-<body>
-<div class="container">
-  <h1 class="text-3xl font-bold underline">Профиль пользователя</h1>
+<body class="bg-gray-100 text-gray-800 font-sans p-6">
+<div class="max-w-lg mx-auto bg-white rounded-lg shadow-md border border-gray-200 p-6">
+  <h1 class="text-3xl font-bold text-blue-600 border-b-2 border-blue-400 pb-2 mb-6">Профиль пользователя</h1>
 
-  <div id="loading">Загрузка...</div>
-  <div id="error" style="color: red;" class="hidden"></div>
+  <div id="loading" class="italic text-gray-500 mb-4">Загрузка...</div>
+  <div id="error" class="hidden text-red-600 font-semibold mb-4"></div>
 
-  <div id="profile" class="hidden">
-    <p>ID: <span id="user-id"></span></p>
-    <p>Имя: <span id="user-firstname"></span></p>
-    <p>Фамилия: <span id="user-lastname"></span></p>
-    <p>Username: <a id="user-username" href="#" target="_blank"></a></p>
-    <p>Последний вход: <span id="user-lastlogin"></span></p>
+  <div id="profile" class="hidden space-y-4">
+    <div class="p-4 bg-white rounded-lg shadow-md border border-gray-200 flex justify-between">
+      <span>ID:</span>
+      <span id="user-id"></span>
+    </div>
+    <div class="p-4 bg-white rounded-lg shadow-md border border-gray-200 flex justify-between">
+      <span>Имя:</span>
+      <span id="user-firstname"></span>
+    </div>
+    <div class="p-4 bg-white rounded-lg shadow-md border border-gray-200 flex justify-between">
+      <span>Фамилия:</span>
+      <span id="user-lastname"></span>
+    </div>
+    <div class="p-4 bg-white rounded-lg shadow-md border border-gray-200 flex justify-between">
+      <span>Username:</span>
+      <a id="user-username" href="#" target="_blank" class="text-blue-600 hover:underline"></a>
+    </div>
+    <div class="p-4 bg-white rounded-lg shadow-md border border-gray-200 flex justify-between">
+      <span>Последний вход:</span>
+      <span id="user-lastlogin"></span>
+    </div>
   </div>
 </div>
 
