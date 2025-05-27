@@ -18,7 +18,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +38,10 @@ public class MyUserService {
 
         String receivedHash = dataMap.remove("hash");
 
+        String timestamp = dataMap.get("auth_date");
+        long date = Long.parseLong(timestamp);
+
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(date), ZoneId.systemDefault());
         String checkString = dataMap.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
@@ -55,7 +61,6 @@ public class MyUserService {
             String firstName = userMap.get("first_name");
             String lastName = userMap.get("last_name");
             String userName = userMap.get("username");
-            String languageCode = userMap.get("language_code");
 
             MyUser user = repository.findById(chatId)
                     .orElse(new MyUser()); // если нет - создаем нового
@@ -66,6 +71,7 @@ public class MyUserService {
             user.setUsername(lastName);
             user.setUsername(userName);
             user.setLastLogin(LocalDateTime.now());
+            user.setLastLogin(dateTime);
 
             repository.save(user);
             return new ApiErrorResponse("hash successful verified!", "ok", HttpStatus.OK.value());
