@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ApiErrorResponse;
 import com.example.demo.dto.InitDataRequest;
 import com.example.demo.exception.InitDataExpiredException;
 import com.example.demo.exception.InvalidHashException;
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -34,7 +32,7 @@ public class MyUserService {
     private final MyUserRepository repository;
 
     @Transactional
-    public ApiErrorResponse handleInitData(InitDataRequest request, String botToken) throws Exception {
+    public MyUser handleInitData(InitDataRequest request, String botToken) throws Exception {
         Map<String, String> dataMap = parseInitData(request.getInitData());
 
         String receivedHash = dataMap.remove("hash");
@@ -79,10 +77,11 @@ public class MyUserService {
             user.setLastLogin(dateTime);
 
             repository.save(user);
-            return new ApiErrorResponse("hash successful verified!", "ok", HttpStatus.OK.value());
+            return user;
         } else {
             throw new InvalidHashException("verification hash doesn't match");
         }
+
     }
 
     private Map<String, String> parseInitData(String initData) {
